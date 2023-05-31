@@ -1,0 +1,36 @@
+version: '3.9'
+
+services:
+  # cockroachdb single mode and insecure (NO SSL),
+  # mapping 8888 port for database console(Web-UI) on local
+  # ref: https://www.cockroachlabs.com/docs/stable/start-a-local-cluster.html#step-4-access-the-db-console
+  roach-single:
+    image: cockroachdb/cockroach:latest
+    command: start-single-node --insecure
+    environment:
+      COCKROACH_DATABASE: ${DATABASE_NAME:-admin}
+      COCKROACH_USER: ${USER_NAME:-root}
+    ports:
+      - "26257:26257"
+      - "8888:8080"
+    volumes:
+      - roach_data:/cockroach/cockroach-data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+
+  # rabbitmq and management console
+  # mapping 15672 port for management console(Web-UI) on local
+  # ref: https://www.rabbitmq.com/management.html
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-admin}
+
+volumes:
+  roach_data:
+  rabbitmq_data:
